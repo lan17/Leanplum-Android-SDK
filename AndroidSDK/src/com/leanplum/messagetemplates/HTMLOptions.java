@@ -52,8 +52,8 @@ class HTMLOptions {
   private ActionContext actionContext;
   private String htmlAlign;
   private int htmlHeight;
-  private int htmlWidth;
-  private String htmlWidthType;
+  private LeanplumSize htmlWidth;
+  private LeanplumSize htmlYOffset;
 
   HTMLOptions(ActionContext context) {
     this.setActionContext(context);
@@ -66,6 +66,7 @@ class HTMLOptions {
     this.setHtmlAlign(context.stringNamed(MessageTemplates.Args.HTML_ALIGN));
     this.setHtmlHeight(context.numberNamed(MessageTemplates.Args.HTML_HEIGHT).intValue());
     this.setHtmlWidth(context.stringNamed(MessageTemplates.Args.HTML_WIDTH));
+    this.setHtmlYOffset(context.stringNamed(MessageTemplates.Args.HTML_Y_OFFSET));
   }
 
   /**
@@ -196,25 +197,36 @@ class HTMLOptions {
     return htmlHeight;
   }
 
-  int getHtmlWidth() {
+  LeanplumSize getHtmlWidth() {
     return htmlWidth;
   }
 
-  String getHtmlWidthType() {
-    return htmlWidthType;
+  private void setHtmlWidth(String htmlWidth) {
+    this.htmlWidth = getSizeValueAndType(htmlWidth);
   }
 
-  private void setHtmlWidth(String htmlWidth) {
-    if (TextUtils.isEmpty(htmlWidth)) {
-      return;
+  LeanplumSize getHtmlYOffset() {
+    return htmlYOffset;
+  }
+
+  private void setHtmlYOffset(String htmlYOffset) {
+    this.htmlYOffset = getSizeValueAndType(htmlYOffset);
+  }
+
+  private LeanplumSize getSizeValueAndType(String stringValue) {
+    if (TextUtils.isEmpty(stringValue)) {
+      return null;
     }
-    if (htmlWidth.contains("px")) {
-      this.htmlWidth = Integer.parseInt(htmlWidth.split("px")[0]);
-      this.htmlWidthType = "px";
-    } else if (htmlWidth.contains("%")) {
-      this.htmlWidth = Integer.parseInt(htmlWidth.split("%")[0]);
-      this.htmlWidthType = "%";
+
+    LeanplumSize out = new LeanplumSize();
+    if (stringValue.contains("px")) {
+      out.value = Integer.parseInt(stringValue.split("px")[0]);
+      out.type = "px";
+    } else if (stringValue.contains("%")) {
+      out.value = Integer.parseInt(stringValue.split("%")[0]);
+      out.type = "%";
     }
+    return out;
   }
 
   private void setHtmlHeight(int htmlHeight) {
@@ -296,5 +308,10 @@ class HTMLOptions {
         .with(MessageTemplates.Args.TRACK_URL, MessageTemplates.Values.DEFAULT_TRACK_URL)
         .with(MessageTemplates.Args.HTML_ALIGN, MessageTemplates.Values.DEFAULT_HTML_ALING)
         .with(MessageTemplates.Args.HTML_HEIGHT, MessageTemplates.Values.DEFAULT_HTML_HEIGHT);
+  }
+
+  static class LeanplumSize {
+    int value;
+    String type;
   }
 }
